@@ -23,17 +23,8 @@ type Block struct {
 	Difficulty int
 }
 
-func genesis() *Block {
+func Genesis() *Block {
 	return CreateBlock("GENESIS-DATA", []byte{})
-}
-
-func (b *Block) Serialize() []byte {
-	var res bytes.Buffer
-	encoder := gob.NewEncoder(&res)
-
-	err := encoder.Encode(b)
-	Handle(err)
-	return res.Bytes()
 }
 
 func CreateBlock(data string, PrevHash []byte) *Block {
@@ -43,6 +34,15 @@ func CreateBlock(data string, PrevHash []byte) *Block {
 	block.Hash = hash[:]
 	block.Nonce = nonce
 	return block
+}
+
+func (b *Block) Serialize() []byte {
+	var res bytes.Buffer
+	encoder := gob.NewEncoder(&res)
+
+	err := encoder.Encode(b)
+	Handle(err)
+	return res.Bytes()
 }
 
 func Deserialize(data []byte) *Block {

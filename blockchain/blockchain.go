@@ -67,7 +67,7 @@ func InitBlockchain(address string, nodeId string) *Blockchain {
 	var lastHash []byte
 
 	if DBexisits(path) {
-		fmt.Println("Blockchain already exists")
+		fmt.Println("Blockchain does not exists")
 		runtime.Goexit()
 	}
 
@@ -83,8 +83,7 @@ func InitBlockchain(address string, nodeId string) *Blockchain {
 		//last hash of our blockchian in our disk database and we will push to this instance in memory
 		//the reason why the last hash isimportant is that it helps derive a new block in our blockchain
 		//if there is no existing blockchain we will create a genesis block we will push it in our databse then we will save the genesis block hash as the lastblock hash in our databse
-		cbtx := CoinbaseTx(address, genesisData)
-		genesis := Genesis(cbtx)
+		genesis := Genesis()
 		fmt.Println("Genesis created")
 		err = txn.Set(genesis.Hash, genesis.Serialize())
 		Handle(err)

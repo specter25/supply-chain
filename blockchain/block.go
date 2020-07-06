@@ -24,7 +24,7 @@ type Block struct {
 }
 
 func genesis() *Block {
-	return CreateBlock("GENESIS-DATA", []byte{}, 0)
+	return CreateBlock("GENESIS-DATA", []byte{})
 }
 
 func (b *Block) Serialize() []byte {
@@ -38,7 +38,7 @@ func (b *Block) Serialize() []byte {
 
 func CreateBlock(data string, PrevHash []byte) *Block {
 	block := &Block{time.Now().Unix(), []byte{}, PrevHash, 0, data, INITIAL_DIFFICULTY}
-	pow := Newproof(block)
+	pow := Newproof(block, 3)
 	nonce, hash := pow.Run()
 	block.Hash = hash[:]
 	block.Nonce = nonce

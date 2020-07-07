@@ -12,9 +12,12 @@ import (
 )
 
 const (
-	dbPath      = "./tmp/blocks"          // this %s allows us to have multiple databases for each of our nodes
-	dbFile      = "./tmp/blocks/MANIFEST" //tocheck whether database exists or not
-	genesisData = "First Transaction from genesis"
+	dbPath             = "./tmp/blocks"          // this %s allows us to have multiple databases for each of our nodes
+	dbFile             = "./tmp/blocks/MANIFEST" //tocheck whether database exists or not
+	genesisData        = "First Transaction from genesis"
+	INITIAL_DIFFICULTY = 3
+	STARTING_BALANCE   = 1000
+	MINE_RATE          = 1000
 )
 
 type Blockchain struct {
@@ -124,5 +127,44 @@ func ContinueBlockchain(nodeId string) *Blockchain {
 	Handle(err)
 	chain := Blockchain{lastHash, db}
 	return &chain
+
+}
+func (chain *Blockchain) MineBlock(data string) *Block {
+	var lastHeight int
+	var lastHash []byte
+	var lastBlockData []byte
+	var lastBlock *Block
+	err := chain.Database.View(func(txn *badger.Txn) error {
+		item, err := txn.Get([]byte("lh"))
+		Handle(err)
+		err1 := item.Value(func(val []byte) error {
+			lastHash = append([]byte{}, val...)
+			return nil
+		})
+		Handle(err1)
+		item, err = txn.Get([]byte(lastHash))
+		Handle(err)
+		err1 = item.Value(func(val []byte) error {
+			lastBlockData = append([]byte{}, val...)
+			return nil
+		})
+		Handle(err1)
+		lastBlock = Deserialize(lastBlockData)
+		lastHeight = lastBlock.Height
+
+		return err
+	})
+	Handle(err)
+	newBlock := CreateBlock(data, lastHash, lastHeight+1, lastBlock.Difficulty, lastBlock.Timestamp)
+
+	err = chain.Database.Update(func(txn *badger.Txn) error {
+		err := txn.Set(newBlock.Hash, newBlock.Serialize())
+		Handle(err)
+		err = txn.Set([]byte("lh"), newBlock.Hash)
+		chain.LastHash = newBlock.Hash
+		return err
+	})
+	Handle(err)
+	return newBlock
 
 }

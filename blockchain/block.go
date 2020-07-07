@@ -7,32 +7,27 @@ import (
 	"time"
 )
 
-const (
-	INITIAL_DIFFICULTY = 3
-	STARTING_BALANCE   = 1000
-	MINE_RATE          = 1000
-)
-
 type Block struct {
-	Timestamp int64
-	Hash      []byte
-	PrevHash  []byte
-	Nonce     int
-	// Height       int
+	Timestamp  int64
+	Hash       []byte
+	PrevHash   []byte
+	Nonce      int
+	Height     int
 	Data       string
-	Difficulty int
+	Difficulty int64
 }
 
 func Genesis() *Block {
-	return CreateBlock("GENESIS-DATA", []byte{})
+	return CreateBlock("GENESIS-DATA", []byte{}, 0, INITIAL_DIFFICULTY, 0)
 }
 
-func CreateBlock(data string, PrevHash []byte) *Block {
-	block := &Block{time.Now().Unix(), []byte{}, PrevHash, 0, data, INITIAL_DIFFICULTY}
-	pow := Newproof(block, 3)
-	nonce, hash := pow.Run()
+func CreateBlock(data string, PrevHash []byte, Height int, Difficulty int64, lasttime int64) *Block {
+	block := &Block{time.Now().Unix(), []byte{}, PrevHash, 0, Height, data, Difficulty}
+	pow := Newproof(block)
+	nonce, hash, difficulty := pow.Run(lasttime)
 	block.Hash = hash[:]
 	block.Nonce = nonce
+	block.Difficulty = difficulty
 	return block
 }
 
